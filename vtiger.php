@@ -8,7 +8,6 @@ class vtiger {
         $headers = [
             "Content-Type: application/json",
             "Accept: application/json",
-            "Accept-Encoding: gzip",
         ];
 
         return $this->request('GET', $headers, $crmUrl . '/webservice.php?operation=getchallenge&username=' . $userInfo['username']);
@@ -25,16 +24,17 @@ class vtiger {
         $headers = [
             "Content-Type: application/json",
             "Accept: application/json",
-            "Accept-Encoding: gzip",
         ];
 
         $data = [
             "operation" => "login",
             "username" => $userInfo['username'],
-            "accessKey" => md5((string)$this->apiCredential['result']['token'] . $userInfo['accessKey']),
+            "accessKey" => md5($this->apiCredential['result']['token'] . $userInfo['accessKey']),
         ];
+        $data = json_encode($data);
 
-        $loginInfo = json_encode($this->request('POST', $headers, $crmUrl, $data));
+        $loginInfo = json_decode($this->request('POST', $headers, $crmUrl, $data));
+        
         $this->apiCredential[] = [
             'sessionId' => $loginInfo['result']['sessionId'],
         ];
@@ -43,7 +43,7 @@ class vtiger {
 
     public function  vtiger($userInfo, $crmUrl) {
 
-        $this->setApiCredential(json_encode($this->getApiInfo($userInfo, $crmUrl)));
+        $this->setApiCredential(json_decode($this->getApiInfo($userInfo, $crmUrl)));
 
         if (isset($this->apiCredential) && $this->apiCredential != 'false') {
             $this->login($userInfo, $crmUrl);
@@ -60,7 +60,7 @@ class vtiger {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
-        curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false); // required as of PHP 5.6.0
+//        curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false); // required as of PHP 5.6.0
 
         if ($data != NULL) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
@@ -74,13 +74,12 @@ class vtiger {
         $headers = [
             "Content-Type: application/json",
             "Accept: application/json",
-            "Accept-Encoding: gzip",
         ];
 
-        $types = json_encode($this->request('GET', $headers, $crmUrl . '/webservice.php?operation=listtypes&sessionName=' . $this->apiCredential['sessionId']));
+        $types = json_decode($this->request('GET', $headers, $crmUrl . '/webservice.php?operation=listtypes&sessionName=' . $this->apiCredential['sessionId']));
 
         foreach ($types['result']['types'] as $type) {
-            var_dump(json_encode($this->request('GET', $headers, $crmUrl . '/webservice.php?operation=describe&sessionName=' . $this->apiCredential['sessionId']) . '&elementType=' . $type));
+            var_dump(json_decode($this->request('GET', $headers, $crmUrl . '/webservice.php?operation=describe&sessionName=' . $this->apiCredential['sessionId']) . '&elementType=' . $type));
         }
 
     }
@@ -94,4 +93,4 @@ $userInfo = [
 
 $crmUrl = "https://company12425.od2.vtiger.com";
 
-$task = new vtiger($userInfo, $crmUrl);
+$task = new vtiger($userInfo, $crmUrl); ?>
